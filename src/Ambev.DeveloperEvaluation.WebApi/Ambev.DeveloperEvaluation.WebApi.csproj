@@ -25,10 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Users\GetUser\" />
     <Folder Include="Features\Users\DeleteUser\" />
     <Folder Include="Features\Users\ListUsers\" />
     <Folder Include="Features\Users\UpdateUser\" />
+    <Folder Include="Mappings\" />
   </ItemGroup>
 
 </Project>

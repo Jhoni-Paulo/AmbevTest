@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Bogus;
+using System.Data;
 
 namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 
@@ -22,12 +23,15 @@ public static class UserTestData
     /// - Role (Customer or Admin)
     /// </summary>
     private static readonly Faker<User> UserFaker = new Faker<User>()
-        .RuleFor(u => u.Username, f => f.Internet.UserName())
-        .RuleFor(u => u.Password, f => $"Test@{f.Random.Number(100, 999)}")
-        .RuleFor(u => u.Email, f => f.Internet.Email())
-        .RuleFor(u => u.Phone, f => $"+55{f.Random.Number(11, 99)}{f.Random.Number(100000000, 999999999)}")
-        .RuleFor(u => u.Status, f => f.PickRandom(UserStatus.Active, UserStatus.Suspended))
-        .RuleFor(u => u.Role, f => f.PickRandom(UserRole.Customer, UserRole.Admin));
+        .CustomInstantiator(f => new User
+            (
+        username: f.Internet.UserName(),
+        email: f.Internet.Email(),
+        phone: "+5541955441122",
+        role: f.PickRandom(UserRole.Customer, UserRole.Admin),
+        status: f.PickRandom(UserStatus.Active, UserStatus.Inactive)
+            )
+        );
 
     /// <summary>
     /// Generates a valid User entity with randomized data.
@@ -37,7 +41,29 @@ public static class UserTestData
     /// <returns>A valid User entity with randomly generated data.</returns>
     public static User GenerateValidUser()
     {
-        return UserFaker.Generate();
+        var user = UserFaker.Generate();
+        user.SetPassword(GenerateValidPassword());
+        return user;
+    }
+
+    /// <summary>
+    /// Generates a valid User entity with a specific status for testing purposes.
+    /// </summary>
+    /// <param name="status">The UserStatus to set for the generated user.</param>
+    /// <returns>A valid User entity with the specified status.</returns>
+    public static User GenerateValidUserWithStatus(UserStatus status)
+    {
+        var user = UserFaker.Generate();
+
+        var userWithStatus = new User(
+            user.Username,
+            user.Email,
+            user.Phone,
+            user.Role,
+            status
+        );
+        userWithStatus.SetPassword(GenerateValidPassword());
+        return userWithStatus;
     }
 
     /// <summary>

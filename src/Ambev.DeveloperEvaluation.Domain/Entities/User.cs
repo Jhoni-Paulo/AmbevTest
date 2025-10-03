@@ -1,11 +1,10 @@
 using Ambev.DeveloperEvaluation.Common.Security;
-using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Validation;
+using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
-
 
 /// <summary>
 /// Represents a user in the system with authentication and profile information.
@@ -15,108 +14,89 @@ public class User : BaseEntity, IUser
 {
     /// <summary>
     /// Gets the user's full name.
-    /// Must not be null or empty and should contain both first and last names.
     /// </summary>
-    public string Username { get; set; } = string.Empty;
+    public string Username { get; private set; }
 
     /// <summary>
     /// Gets the user's email address.
-    /// Must be a valid email format and is used as a unique identifier for authentication.
     /// </summary>
-    public string Email { get; set; } = string.Empty;
+    public string Email { get; private set; }
 
     /// <summary>
     /// Gets the user's phone number.
-    /// Must be a valid phone number format following the pattern (XX) XXXXX-XXXX.
     /// </summary>
-    public string Phone { get; set; } = string.Empty ;
+    public string Phone { get; private set; }
 
     /// <summary>
     /// Gets the hashed password for authentication.
-    /// Password must meet security requirements: minimum 8 characters, at least one uppercase letter,
-    /// one lowercase letter, one number, and one special character.
     /// </summary>
-    public string Password { get; set; } = string.Empty;
+    public string Password { get; private set; }
 
     /// <summary>
     /// Gets the user's role in the system.
-    /// Determines the user's permissions and access levels.
     /// </summary>
-    public UserRole Role { get;     set; }
+    public UserRole Role { get; private set; }
 
     /// <summary>
     /// Gets the user's current status.
-    /// Indicates whether the user is active, inactive, or blocked in the system.
     /// </summary>
-    public UserStatus Status { get; set; }
+    public UserStatus Status { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the user was created.
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <summary>
     /// Gets the date and time of the last update to the user's information.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; private set; }
 
-    /// <summary>
-    /// Gets the unique identifier of the user.
-    /// </summary>
-    /// <returns>The user's ID as a string.</returns>
     string IUser.Id => Id.ToString();
-
-    /// <summary>
-    /// Gets the username.
-    /// </summary>
-    /// <returns>The username.</returns>
     string IUser.Username => Username;
-
-    /// <summary>
-    /// Gets the user's role in the system.
-    /// </summary>
-    /// <returns>The user's role as a string.</returns>
     string IUser.Role => Role.ToString();
 
     /// <summary>
-    /// Initializes a new instance of the User class.
+    /// Private constructor for exclusive use by EF Core.
     /// </summary>
-    public User()
+    private User()
     {
-        CreatedAt = DateTime.UtcNow;
+        Username = string.Empty;
+        Email = string.Empty;
+        Phone = string.Empty;
+        Password = string.Empty;
     }
 
     /// <summary>
-    /// Performs validation of the user entity using the UserValidator rules.
+    /// Public constructor that ensures the creation of a valid User entity.
     /// </summary>
-    /// <returns>
-    /// A <see cref="ValidationResultDetail"/> containing:
-    /// - IsValid: Indicates whether all validation rules passed
-    /// - Errors: Collection of validation errors if any rules failed
-    /// </returns>
-    /// <remarks>
-    /// <listheader>The validation includes checking:</listheader>
-    /// <list type="bullet">Username format and length</list>
-    /// <list type="bullet">Email format</list>
-    /// <list type="bullet">Phone number format</list>
-    /// <list type="bullet">Password complexity requirements</list>
-    /// <list type="bullet">Role validity</list>
-    /// 
-    /// </remarks>
-    public ValidationResultDetail Validate()
+    public User(string username, string email, string phone, UserRole role, UserStatus status)
     {
-        var validator = new UserValidator();
-        var result = validator.Validate(this);
-        return new ValidationResultDetail
-        {
-            IsValid = result.IsValid,
-            Errors = result.Errors.Select(o => (ValidationErrorDetail)o)
-        };
+        Username = username;
+        Email = email;
+        Phone = phone;
+        Role = role;
+        Status = status;
+        CreatedAt = DateTime.UtcNow;
+        Password = string.Empty;
+
+        ValidateState("constructor");
+    }
+
+    /// <summary>
+    /// Sets the user's password. The password must already be hashed from the application layer.
+    /// </summary>
+    /// <param name="hashedPassword">The encrypted password.</param>
+    public void SetPassword(string hashedPassword)
+    {
+        if (string.IsNullOrWhiteSpace(hashedPassword))
+            throw new DomainException("Password hash cannot be empty.");
+
+        Password = hashedPassword;
     }
 
     /// <summary>
     /// Activates the user account.
-    /// Changes the user's status to Active.
     /// </summary>
     public void Activate()
     {
@@ -126,7 +106,6 @@ public class User : BaseEntity, IUser
 
     /// <summary>
     /// Deactivates the user account.
-    /// Changes the user's status to Inactive.
     /// </summary>
     public void Deactivate()
     {
@@ -136,11 +115,33 @@ public class User : BaseEntity, IUser
 
     /// <summary>
     /// Blocks the user account.
-    /// Changes the user's status to Blocked.
     /// </summary>
     public void Suspend()
     {
         Status = UserStatus.Suspended;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Performs full entity validation before persistence.
+    /// </summary>
+    public void Validate()
+    {
+        ValidateState("constructor, default");
+    }
+
+    /// <summary>
+    /// Private method that runs the domain validator and throws a DomainException on failure.
+    /// </summary>
+    private void ValidateState(string ruleSet)
+    {
+        var validator = new UserValidator();
+        var validationResult = validator.Validate(this, options => options.IncludeRuleSets(ruleSet.Split(',')));
+
+        if (!validationResult.IsValid)
+        {
+            var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+            throw new DomainException($"User entity validation failed: {errors}");
+        }
     }
 }

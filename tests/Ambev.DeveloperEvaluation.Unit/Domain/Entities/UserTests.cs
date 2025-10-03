@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using FluentAssertions;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities;
@@ -18,14 +19,13 @@ public class UserTests
     public void Given_SuspendedUser_When_Activated_Then_StatusShouldBeActive()
     {
         // Arrange
-        var user = UserTestData.GenerateValidUser();
-        user.Status = UserStatus.Suspended;
+        var user = UserTestData.GenerateValidUserWithStatus(UserStatus.Suspended);
 
         // Act
         user.Activate();
 
         // Assert
-        Assert.Equal(UserStatus.Active, user.Status);
+        user.Status.Should().Be(UserStatus.Active);
     }
 
     /// <summary>
@@ -35,55 +35,48 @@ public class UserTests
     public void Given_ActiveUser_When_Suspended_Then_StatusShouldBeSuspended()
     {
         // Arrange
-        var user = UserTestData.GenerateValidUser();
-        user.Status = UserStatus.Active;
+        var user = UserTestData.GenerateValidUserWithStatus(UserStatus.Active);
 
         // Act
         user.Suspend();
 
         // Assert
-        Assert.Equal(UserStatus.Suspended, user.Status);
+        user.Status.Should().Be(UserStatus.Suspended);
     }
 
     /// <summary>
     /// Tests that validation passes when all user properties are valid.
     /// </summary>
-    [Fact(DisplayName = "Validation should pass for valid user data")]
-    public void Given_ValidUserData_When_Validated_Then_ShouldReturnValid()
+    [Fact(DisplayName = "Given valid data When creating user Then constructor should not throw exception")]
+    public void Given_ConstructorWithValidData_ShouldNotThrowException()
     {
         // Arrange
         var user = UserTestData.GenerateValidUser();
 
         // Act
-        var result = user.Validate();
+        Action act = () => user.Validate();
+
 
         // Assert
-        Assert.True(result.IsValid);
-        Assert.Empty(result.Errors);
+        act.Should().NotThrow();
     }
 
     /// <summary>
     /// Tests that validation fails when user properties are invalid.
     /// </summary>
-    [Fact(DisplayName = "Validation should fail for invalid user data")]
-    public void Given_InvalidUserData_When_Validated_Then_ShouldReturnInvalid()
+    [Fact(DisplayName = "Given invalid data When creating user Then constructor should throw DomainException")]
+    public void Given_ConstructorWithInvalidData_ShouldThrowDomainException()
     {
         // Arrange
-        var user = new User
-        {
-            Username = "", // Invalid: empty
-            Password = UserTestData.GenerateInvalidPassword(), // Invalid: doesn't meet password requirements
-            Email = UserTestData.GenerateInvalidEmail(), // Invalid: not a valid email
-            Phone = UserTestData.GenerateInvalidPhone(), // Invalid: doesn't match pattern
-            Status = UserStatus.Unknown, // Invalid: cannot be Unknown
-            Role = UserRole.None // Invalid: cannot be None
-        };
+        Action act = () => new User(
+            "",
+            UserTestData.GenerateInvalidEmail(),
+            UserTestData.GenerateInvalidPhone(),
+            UserRole.None,
+            UserStatus.Unknown
+        ).SetPassword(UserTestData.GenerateInvalidPassword());
 
-        // Act
-        var result = user.Validate();
-
-        // Assert
-        Assert.False(result.IsValid);
-        Assert.NotEmpty(result.Errors);
+        // Act & Assert
+        act.Should().Throw<DomainException>();
     }
 }
