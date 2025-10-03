@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,7 +20,9 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.Property(s => s.CustomerName).HasMaxLength(200);
         builder.Property(s => s.BranchName).HasMaxLength(200);
 
-        builder.Property(s => s.TotalAmount).HasColumnType("decimal(18,2)");
+        builder.Property(s => s.TotalAmount)
+            .HasConversion(money => money.Value, value => (Money)value)
+            .HasColumnType("decimal(18,2)");
 
         builder.HasMany(s => s.Items)
             .WithOne(i => i.Sale)

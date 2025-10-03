@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Validation;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -27,7 +28,7 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// The price of a single unit of the product.
     /// </summary>
-    public decimal UnitPrice { get; private set; }
+    public Money UnitPrice { get; private set; }
 
     /// <summary>
     /// The discount percentage applied to this item.
@@ -37,7 +38,7 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// The total price for this item (Quantity * UnitPrice * (1 - Discount)).
     /// </summary>
-    public decimal TotalPrice { get; private set; }
+    public Money TotalPrice { get; private set; }
 
     /// <summary>
     /// Foreign key to the Sale aggregate root.
@@ -73,7 +74,7 @@ public class SaleItem : BaseEntity
             throw new DomainException("Discount must be between 0 and 1.");
 
         Discount = discount;
-        TotalPrice = Quantity * UnitPrice * (1 - discount);
+        TotalPrice = (Quantity * UnitPrice) * (1 - discount);
     }
 
     private void Validate()

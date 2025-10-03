@@ -1,116 +1,113 @@
+# Sales Management API - Technical Test
 
+This is the implementation of a RESTful API for sales management, developed as part of a technical evaluation process for the **Senior Software Engineer** position.
 
-# 🛍️ API de Gerenciamento de Vendas - Teste Técnico
-
-Esta é a implementação de uma API RESTful para gerenciamento de vendas, desenvolvida como parte de um processo de avaliação técnica para a vaga de **Engenheiro de Software Sênior**.
-
-O projeto foi desenvolvido com **.NET 8.0** e segue rigorosamente os princípios de **Clean Architecture**, **Domain-Driven Design (DDD)** e **CQRS**.
+The project was developed with **.NET 8.0** and strictly follows the principles of **Clean Architecture**, **Domain-Driven Design (DDD)**, and **CQRS**.
 
 ---
 
-## 🏛️ Arquitetura
+## Architecture
 
-A solução está estruturada seguindo os princípios da **Clean Architecture**, com uma separação clara de responsabilidades entre as camadas:
+The solution is structured following the principles of **Clean Architecture**, with a clear separation of responsibilities between the layers:
 
--   🧅 **Domain**: Contém as entidades, regras de negócio e a lógica de domínio mais pura. É o coração da aplicação.
--   🧅 **Application**: Orquestra os casos de uso (features) utilizando o padrão CQRS com `MediatR`. Não contém lógica de negócio.
--   🧅 **Infrastructure**: Contém as implementações de interesses externos, como acesso a banco de dados (`EF Core`), logging, etc.
--   🧅 **WebApi (Presentation)**: Expõe a funcionalidade da aplicação através de uma API RESTful.
+-   🧅 **Domain**: Contains the entities, business rules, and the purest domain logic. It is the heart of the application.
+-   🧅 **Application**: Orchestrates the use cases (features) using the CQRS pattern with `MediatR`. It does not contain business logic.
+-   🧅 **Infrastructure**: Contains implementations of external concerns, such as database access (`EF Core`), logging, etc.
+-   🧅 **WebApi (Presentation)**: Exposes the application's functionality through a RESTful API.
 
 ---
 
-## 🛠️ Stack de Tecnologias
+## Technology Stack
 
 ### Backend
 -   **Framework**: .NET 8.0, C#
--   **Padrões**: Clean Architecture, DDD, CQRS, SOLID
+-   **Patterns**: Clean Architecture, DDD, CQRS, SOLID
 -   **API**: ASP.NET Core
--   **Banco de Dados**: PostgreSQL
+-   **Database**: PostgreSQL
 -   **ORM**: Entity Framework Core 8
 
-### Bibliotecas Principais
--   **`MediatR`**: Para implementação de CQRS.
--   **`FluentValidation`**: Para validação de dados.
--   **`AutoMapper`**: Para mapeamento de objetos.
--   **`Serilog`**: Para logging estruturado.
+### Main Libraries
+-   **`MediatR`**: For CQRS implementation.
+-   **`FluentValidation`**: For data validation.
+-   **`AutoMapper`**: For object mapping.
+-   **`Serilog`**: For structured logging.
 
-### Testes
--   **`xUnit`**: Framework de teste.
--   **`NSubstitute`**: Para criação de mocks.
--   **`FluentAssertions`**: Para asserções legíveis.
--   **`Bogus`**: Para geração de dados de teste.
+### Testing
+-   **`xUnit`**: Testing framework.
+-   **`NSubstitute`**: For creating mocks.
+-   **`FluentAssertions`**: For readable assertions.
+-   **`Bogus`**: For generating test data.
 
 ---
 
-## 🚀 Como Configurar e Executar o Projeto
+## How to Set Up and Run the Project
 
-### Pré-requisitos
+### Prerequisites
 -   [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
--   [Docker](https://www.docker.com/products/docker-desktop) e Docker Compose
+-   [Docker](https://www.docker.com/products/docker-desktop) and Docker Compose
 
-### Passo 1: Configuração do Ambiente
-O ambiente de desenvolvimento completo (API e banco de dados) é orquestrado via Docker Compose.
+### Step 1: Environment Setup
+The complete development environment (API and database) is orchestrated via Docker Compose.
 
-1.  **Clone o repositório:**
+1.  **Clone the repository:**
     ```bash
-    git clone <url-do-repositorio>
-    cd <nome-da-pasta>
+    git clone <repository-url>
+    cd <folder-name>
     ```
 
-2.  **Variáveis de Ambiente (Opcional):**
-    O arquivo `docker-compose.yml` e o `appsettings.json` estão pré-configurados para se conectarem. Se precisar alterar portas ou credenciais, ajuste esses arquivos.
+2.  **Environment Variables (Optional):**
+    The `docker-compose.yml` and `appsettings.json` files are pre-configured to connect. If you need to change ports or credentials, adjust these files.
 
-### Passo 2: Executando com Docker Compose
-Esta é a maneira mais simples e recomendada de executar o projeto.
+### Step 2: Running with Docker Compose
 
-1.  **Inicie os containers:**
-    Na raiz do projeto, execute o comando:
+1.  **Start the containers:**
+    In the project root, run the command:
     ```bash
     docker-compose up --build
     ```
-    Este comando irá construir as imagens e iniciar os containers da API e do banco de dados PostgreSQL.
+    This command will build the images and start the API and PostgreSQL database containers.
 
-2.  **Acesse a API:**
-    Após a inicialização, a API estará disponível em:
-    -   **URL Base:** `http://localhost:8080`
-    -   **Documentação (Swagger UI):** `http://localhost:8080/swagger`
+2.  **Access the API:**
+    After initialization, the API will be available at:
+    -   **Base URL:** `http://localhost:8080`
+    -   **Documentation (Swagger UI):** `http://localhost:8080/swagger`
 
-### Passo 3: Aplicando as Migrações do Banco de Dados
-Na primeira execução, o banco de dados estará vazio. É necessário aplicar as migrações para criar as tabelas.
+### Step 3: Applying Database Migrations
+On the first run, the database will be empty. You need to apply the migrations to create the tables.
 
-1.  Certifique-se de que os containers do Docker estão em execução.
-2.  Abra um **novo terminal** na raiz do projeto.
-3.  Instale a ferramenta do EF Core (se ainda não tiver):
+1.  Make sure the Docker containers are running.
+2.  Open a **new terminal** in the project root.
+3.  Install the EF Core tool (if you haven't already):
     ```bash
     dotnet tool install --global dotnet-ef
     ```
-4.  Execute o comando para atualizar o banco de dados:
+4.  Run the command to update the database:
     ```bash
     dotnet ef database update --project src/Ambev.DeveloperEvaluation.WebApi
     ```
-    Este comando aplicará o schema no banco de dados que está rodando no container.
+    This command will apply the schema to the database running in the container.
 
 ---
 
-## ✅ Como Executar os Testes
+## How to Run the Tests
 
-Os testes unitários são fundamentais para garantir a qualidade do código.
+Unit tests are fundamental to ensuring code quality.
 
-1.  **Navegue até a raiz do projeto** (onde o arquivo `.sln` está localizado).
-2.  **Execute o comando de teste do .NET:**
+1.  **Navigate to the project root** (where the `.sln` file is located).
+2.  **Run the .NET test command:**
     ```bash
     dotnet test
     ```
-    Este comando irá descobrir e executar todos os testes da solução.
+    This command will discover and run all tests in the solution.
 
 ---
 
-## 🗺️ Estrutura dos Endpoints da API
+## API Endpoint Structure
 
-A documentação completa dos endpoints, com exemplos de `request` e `response`, está disponível na interface do **Swagger UI**.
+The complete documentation for the endpoints, with `request` and `response` examples, is available in the **Swagger UI** interface.
 
-> 👉 **`http://localhost:8080/swagger`**
+>  **`http://localhost:8080/swagger`**
 
-### Principais Endpoints de Vendas:
--   `POST /api/sales`: Cria uma nova venda.
--   `GET /api/sales/{id}`: Busca uma venda pelo seu ID.
+### Main Sales Endpoints:
+-   `POST /api/sales`: Creates a new sale.
+-   `GET /api/sales/{id}`: Fetches a sale by its ID.

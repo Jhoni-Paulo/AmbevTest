@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Validation;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
@@ -43,7 +44,7 @@ public class Sale : BaseEntity
     /// <summary>
     /// The total amount for the entire sale.
     /// </summary>
-    public decimal TotalAmount { get; private set; }
+    public Money TotalAmount { get; private set; }
 
     /// <summary>
     /// Indicates if the sale has been cancelled.
@@ -106,7 +107,8 @@ public class Sale : BaseEntity
 
     private void RecalculateTotalAmount()
     {
-        TotalAmount = _items.Sum(item => item.TotalPrice);
+        var total = _items.Sum(item => item.TotalPrice);
+        TotalAmount = total;
     }
 
     private decimal CalculateDiscount(int quantity)

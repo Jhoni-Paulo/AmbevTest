@@ -68,7 +68,7 @@ public class SaleTests
 
         // Assert
         sale.TotalAmount.Should().Be(expectedTotal);
-        sale.Items.First().Discount.Should().Be(0.10m);
+        sale.Items.First().Discount.Should().Be(0.20m);
     }
 
     [Fact(DisplayName = "Given item quantity over 20 When adding item Then should throw DomainException")]

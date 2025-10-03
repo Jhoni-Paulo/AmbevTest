@@ -74,8 +74,7 @@ public class CreateUserHandlerTests
     public async Task Handle_WithInvalidEntityData_ShouldThrowDomainExceptionFromEntity()
     {
         // Arrange
-        var command = CreateUserHandlerTestData.GenerateValidCommand();
-        command.Username = "";
+        var command = CreateUserHandlerTestData.GenerateInvalidCommand();
 
         _userRepository.GetByEmailAsync(command.Email).ReturnsNull();
 

@@ -30,6 +30,24 @@ public static class CreateUserHandlerTestData
         .RuleFor(u => u.Role, f => f.PickRandom(UserRole.Customer, UserRole.Admin));
 
     /// <summary>
+    /// Configures the Faker to generate invalid User entities.
+    /// The generated users will have invalid:
+    /// - Username
+    /// - Password
+    /// - Email 
+    /// - Phone 
+    /// - Status 
+    /// - Role 
+    /// </summary>
+    private static readonly Faker<CreateUserCommand> invalidCreateUserHandlerFaker = new Faker<CreateUserCommand>()
+        .RuleFor(u => u.Username, f => "a") 
+        .RuleFor(u => u.Password, f => "123")
+        .RuleFor(u => u.Email, f => f.Lorem.Word())
+        .RuleFor(u => u.Phone, f => "abc-def")
+        .RuleFor(u => u.Status, f => UserStatus.Unknown)
+        .RuleFor(u => u.Role, f => UserRole.None);
+
+    /// <summary>
     /// Generates a valid User entity with randomized data.
     /// The generated user will have all properties populated with valid values
     /// that meet the system's validation requirements.
@@ -38,5 +56,13 @@ public static class CreateUserHandlerTestData
     public static CreateUserCommand GenerateValidCommand()
     {
         return createUserHandlerFaker.Generate();
+    }
+
+    /// <summary>
+    /// Generates a CreateUserCommand with multiple invalid properties.
+    /// </summary>
+    public static CreateUserCommand GenerateInvalidCommand()
+    {
+        return invalidCreateUserHandlerFaker.Generate();
     }
 }

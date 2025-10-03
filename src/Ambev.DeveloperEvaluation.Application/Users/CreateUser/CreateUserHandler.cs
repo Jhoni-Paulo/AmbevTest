@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 
@@ -37,11 +38,12 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserRe
     /// <returns>The created user details</returns>
     public async Task<CreateUserResult> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
+
         var existingUser = await _userRepository.GetByEmailAsync(command.Email, cancellationToken);
         if (existingUser != null)
-            throw new ValidationException($"User with email {command.Email} already exists");
+            throw new DomainException($"User with email {command.Email} already exists.");
 
-        var user = _mapper.Map<User>(command);
+        var user = new User(command.Username, command.Email, command.Phone, command.Role, command.Status);
         var hashedPassword = _passwordHasher.HashPassword(command.Password);
         user.SetPassword(hashedPassword);
 
