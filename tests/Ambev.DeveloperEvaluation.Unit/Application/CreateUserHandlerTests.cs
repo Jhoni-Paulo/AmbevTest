@@ -34,7 +34,7 @@ public class CreateUserHandlerTests
     [Fact(DisplayName = "Given valid command When creating user Then should return success result")]
     public async Task Handle_WithValidCommand_ShouldReturnSuccessResult()
     {
-        // Given
+        // Arrange
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         var user = UserTestData.GenerateValidUser();
 
@@ -45,10 +45,10 @@ public class CreateUserHandlerTests
         var expectedResult = new CreateUserResult { Id = user.Id };
         _mapper.Map<CreateUserResult>(user).Returns(expectedResult);
 
-        // When
+        // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        // Then
+        // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(user.Id);
         await _userRepository.Received(1).CreateAsync(Arg.Any<User>());
@@ -57,15 +57,15 @@ public class CreateUserHandlerTests
     [Fact(DisplayName = "Given an existing email When creating user Then should throw DomainException")]
     public async Task Handle_WithExistingEmail_ShouldThrowDomainException()
     {
-        // Given
+        // Arrange
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         var existingUser = UserTestData.GenerateValidUser();
         _userRepository.GetByEmailAsync(command.Email).Returns(existingUser);
 
-        // When
+        // Act
         Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
-        // Then
+        // Assert
         await act.Should().ThrowAsync<DomainException>()
             .WithMessage($"User with email {command.Email} already exists.");
     }
@@ -73,16 +73,16 @@ public class CreateUserHandlerTests
     [Fact(DisplayName = "Given command that creates invalid entity When creating user Then should throw DomainException")]
     public async Task Handle_WithInvalidEntityData_ShouldThrowDomainExceptionFromEntity()
     {
-        // Given
+        // Arrange
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         command.Username = "";
 
         _userRepository.GetByEmailAsync(command.Email).ReturnsNull();
 
-        // When       
+        // Act       
         Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
-        // Then
+        // Assert
         await act.Should().ThrowAsync<DomainException>();
     }
 }
